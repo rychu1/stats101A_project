@@ -64,8 +64,64 @@ summary(t_pokemon_model)
 plot(t_pokemon_model)
 ```
 ```{r}
+n <- nrow(t_pokemon_model)
+t_leverages <- hatvalues(t_pokemon_model)
+t_cooks <- cooks.distance(t_pokemon_model)
+
+t_leverage_point <- t_leverages[t_leverages > ((2 * 8) / n)]
+t_influential <- t_cooks[t_cooks>4 / (n - 2)]
+length(t_leverage_point)
+length(t_influential)
+```
+
+```{r}
 which(!complete.cases(pokemon_subset))
 ```
 ```{r}
 pokemon_subset[which(!complete.cases(pokemon_subset)), ]
 ```
+## Inverse Response Plot Model
+```{r}
+pokemon_subset2 <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp", "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
+
+attach(pokemon_subset2)
+exp_model <- powerTransform((pokemon_subset2[, c("base_egg_steps", "attack", "defense", "hp", "sp_attack", "sp_defense", "capture_rate", "experience_growth")]))
+summary(exp_model)
+```
+```{r}
+t2_bes <- base_egg_steps^-0.67
+t2_attack <- attack^0.5
+t2_defense <- defense^0.33
+t2_hp <- hp^0.33
+t2_sa <- sp_attack^0.33
+t2_sd <- sp_defense^0.14
+t2_cp <- capture_rate^0.33
+
+test2 <- lm(weight_kg ~ t2_bes + t2_attack + t2_defense + t2_hp + t2_sa + t2_sd + t2_cp)
+
+par(mfrow = c(1,1))
+inverseResponsePlot(test2)
+
+t2_weight <- weight_kg^0.35
+```
+
+```{r}
+t2_pokemon_model <- lm(t2_weight ~ t2_bes + t2_attack + t2_defense + t2_hp + t2_sa + t2_sd + t2_cp + experience_growth)
+par(mfrow = c(2, 2))
+plot(t2_pokemon_model)
+```
+```{r}
+vif(t2_pokemon_model)
+summary(t2_pokemon_model)
+```
+```{r}
+n <- nrow(t2_pokemon_model)
+t2_leverages <- hatvalues(t2_pokemon_model)
+t2_cooks <- cooks.distance(t2_pokemon_model)
+
+t2_leverage_point <- t2_leverages[t2_leverages > ((2 * 8) / n)]
+t2_influential <- t2_cooks[t2_cooks>4 / (n - 2)]
+length(t2_leverage_point)
+length(t2_influential)
+```
+

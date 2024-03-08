@@ -1,0 +1,90 @@
+---
+title: "stats101A_project"
+author: "Ryan Chu"
+date: "2024-03-01"
+output: pdf_document
+---
+
+```{r}
+library(readr)
+pokemon_mod <- read_csv("C:/Users/ryanc/Downloads/pokemon_mod.csv")
+
+pokemon_subset <- pokemon_mod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp", "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
+
+pairs(pokemon_subset)
+```
+
+```{r}
+pokemon_full_model <- lm(weight_kg~capture_rate+base_egg_steps+attack+defense+hp+sp_attack+sp_defense+experience_growth, data = pokemon_subset)
+
+summary(pokemon_full_model)
+
+pokemon_anova <- anova(pokemon_full_model)
+summary(pokemon_anova)
+
+par(mfrow = c(2, 2))
+plot(pokemon_full_model)
+```
+
+```{r}
+attach(pokemon_mod)
+library(car)
+pokemon_full_model_pt <- powerTransform(pokemon_subset)
+summary(pokemon_full_model_pt)
+
+t_weight <- weight_kg^0.16
+t_bes <- base_egg_steps^-0.67
+t_attack <- attack^0.5
+t_defense <- defense^0.33
+t_hp <- hp^0.33
+t_sa <- sp_attack^0.33
+t_sd <- sp_defense^0.15
+t_cp <- capture_rate^0.33
+
+t_pokemon_model <- lm(t_weight~t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth)
+par(mfrow = c(2, 2))
+plot(t_pokemon_model)
+```
+
+
+
+
+```{r}
+library(leaps)
+transformed_pokemon_subset <- data.frame(cbind(t_weight~t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth))
+attach(transformed_pokemon_subset)
+
+pokemon_model_subsets <- regsubsets(t_weight~t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth, data = transformed_pokemon_subset)
+summary(pokemon_model_subsets)
+
+
+p1 <- lm(t_weight ~ t_hp)
+p2 <- lm(t_weight ~ t_defense+t_hp)
+p3 <- lm(t_weight ~ t_attack+t_defense+t_hp)
+p4 <- lm(t_weight ~ t_bes+t_attack+t_defense+t_hp)
+p5 <- lm(t_weight ~ t_bes+t_attack+t_defense+t_hp+experience_growth)
+p6 <- lm(t_weight ~ t_bes+t_attack+t_defense+t_hp+t_cp+experience_growth)
+p7 <- lm(t_weight ~ t_bes+t_attack+t_defense+t_hp+t_sd+t_cp+experience_growth)
+p8 <- lm(t_weight ~ t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth)
+pokemon_model_list <- list(p1, p2, p3, p4, p5, p6, p7, p8)
+
+pokemon_adj_r2 <- sapply(pokemon_model_list, function(x) summary(x)$adj.r.squared)
+pokemon_adj_r2
+
+pokemon_AIC <- sapply(pokemon_model_list, function(x) extractAIC(x)[2])
+pokemon_AIC
+
+p=8
+pokemon_AICc <- sapply(pokemon_model_list, function(x) extractAIC(x)[2]+2*(p+2)*(p+3)/(802-p-1))
+pokemon_AICc
+
+pokemon_BIC <- sapply(pokemon_model_list, function(x) extractAIC(x, k=log(802))[2])
+pokemon_BIC
+
+size <- c(1, 2, 3, 4, 5, 6, 7, 8)
+
+pokemon_gof <- data.frame(cbind(size, pokemon_adj_r2, pokemon_AIC, pokemon_AICc, pokemon_BIC))
+pokemon_gof
+```
+
+

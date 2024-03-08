@@ -1,0 +1,71 @@
+---
+title: "FinalProj"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(car)
+
+pokemod <- read_csv("pokemon_mod.csv")
+pokemon <- read_csv("pokemon.csv")
+```
+```{r}
+pokemon_subset <- pokemod[, c("name", "capture_rate", "base_egg_steps", "attack", "defense", "hp", "sp_attack", "sp_defense", "experience_growth", "is_legendary")]
+
+pokemon_subset
+```
+```{r}
+pokemon_full_model <- lm(capture_rate ~ base_egg_steps + attack + defense + hp + sp_attack + sp_defense + experience_growth + is_legendary, data = pokemon_subset)
+
+summary(pokemon_full_model)
+```
+```{r}
+par(mfrow = c(2, 2))
+plot(pokemon_full_model)
+```
+```{r}
+pokemon_sub_model <- lm(capture_rate ~ attack + defense + hp + sp_attack + sp_defense, data = pokemon_subset)
+
+summary(pokemon_sub_model)
+```
+```{r}
+plot(pokemon_sub_model)
+```
+```{r}
+pokemon_subset <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp", "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
+pokemon_full_model_pt <- powerTransform(pokemon_subset)
+summary(pokemon_full_model_pt)
+
+attach(pokemon_subset)
+t_weight <- weight_kg^0.16
+t_bes <- base_egg_steps^-0.67
+t_attack <- attack^0.5
+t_defense <- defense^0.33
+t_hp <- hp^0.33
+t_sa <- sp_attack^0.33
+t_sd <- sp_defense^0.15
+t_cp <- capture_rate^0.33
+
+t_pokemon_model <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
+par(mfrow = c(2, 2))
+plot(t_pokemon_model)
+```
+```{r}
+vif(t_pokemon_model)
+summary(t_pokemon_model)
+```
+```{r}
+plot(t_pokemon_model)
+```
+```{r}
+which(!complete.cases(pokemon_subset))
+```
+```{r}
+pokemon_subset[which(!complete.cases(pokemon_subset)), ]
+```

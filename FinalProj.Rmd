@@ -124,4 +124,22 @@ t2_influential <- t2_cooks[t2_cooks>4 / (n - 2)]
 length(t2_leverage_point)
 length(t2_influential)
 ```
+```{r}
+pow <- summary(exp_model)$result[, 2]
+cof <- summary(t2_pokemon_model)$coefficients 
+```
+
+Inverse response plot model:
+$$\begin{aligned}
+\text{weight}^{pow[1]}
+&= r cof[1]
+r cof[2] * \text{base egg steps}^{r pow[2]}
++ r cof[3] * \text{attack}^{r pow[3]}
++ r cof[4] * \text{defense}^{r pow[4]} \
+&+ r cof[5] * \text{hp}^{r pow[5]}
+r cof[6] * \text{sp_attack}^{r pow[6]}
++ r cof[7] * \text{sp_defense}^{r pow[7]} \
+&r cof[8] * \text{capture_rate}^{r pow[8]}
++ r cof[9] * \text{experience_growth}
+\end{aligned}$$
 

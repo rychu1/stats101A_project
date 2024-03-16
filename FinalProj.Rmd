@@ -130,6 +130,7 @@ cof <- summary(t_pokemon_model)$coefficients
 ```
 
 Box-cox model:
+
 $$\begin{aligned}
 \text{weight}^{`r pow[1]`}
 &= `r cof[1]`
@@ -193,6 +194,7 @@ cof <- t2_pokemon_model$coefficients
 ```
 
 Inverse response plot model:
+
 $$\begin{aligned}
 \text{weight}^{0.35}
 &= `r cof[1]`
@@ -269,7 +271,7 @@ vif(t_pokemon_model)
 pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 ```
 
-### d) Added Variable Plots
+### b) Added Variable Plots
 
 ```{r p6b}
 par(mfrow = c(2, 2))
@@ -296,14 +298,14 @@ summary(pokemon_model_subsets)
 ### b) Diagnostics
 
 ```{r p7b}
-p1 <- lm(weight_kg ~ t_hp)
-p2 <- lm(weight_kg ~ t_defense+t_hp)
-p3 <- lm(weight_kg ~ t_attack+t_defense+t_hp)
-p4 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp)
-p5 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+experience_growth)
-p6 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_cp+experience_growth)
-p7 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_sd+t_cp+experience_growth)
-p8 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth)
+p1 <- lm(t_weight ~ t_hp)
+p2 <- lm(t_weight ~ t_defense + t_hp)
+p3 <- lm(t_weight ~ t_attack + t_defense + t_hp)
+p4 <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp)
+p5 <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + experience_growth)
+p6 <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_cp + experience_growth)
+p7 <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sd + t_cp +experience_growth)
+p8 <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 
 pokemon_model_list <- list(p1, p2, p3, p4, p5, p6, p7, p8)
 
@@ -379,5 +381,35 @@ forwardAIC <- step(pokemon_base,
 - Forwards AIC: t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + t_sd + t_sa + t_cp
 - Forwards BIC: t_weight ~ t_hp + t_defense + t_attack + t_bes
 
-## 8. Final Model Selection
+## 9. Final Model Selection
+
+### a) Summary Comparison
+
+```{r p9a}
+summary(t_pokemon_model)
+summary(p5)
+```
+
+### b) ANOVA test
+
+```{r p9b}
+anova(p5, t_pokemon_model)
+```
+
+### c) Diagnostics Comparison
+
+```{r p9c}
+par(mfrow = c(2, 2))
+plot(t_pokemon_model)
+plot(p5)
+```
+
+### d) Conclusion
+
+The full model is still preferred as it still has the best diagnostic plots overall
+
+## 10. Final Model
+
+### a) Summary Statistics
+
 

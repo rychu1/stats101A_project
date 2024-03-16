@@ -269,11 +269,22 @@ vif(t_pokemon_model)
 pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 ```
 
-### b) All Possible Subsets
+### d) Added Variable Plots
 
-#### Best Subset Models
+```{r p6b}
+par(mfrow = c(2, 2))
+for (i in names(t_pokemon_model$coefficients)[-1]) {
+  avPlot(t_pokemon_model, variable = i, ask = FALSE)
+}
+```
 
-```{r p6b1}
+
+
+## 7. Selecting via All Possible Subsets
+
+### a) Best Subset Models
+
+```{r p7a}
 transformed_pokemon_subset <- data.frame(cbind(t_weight ~ t_bes + t_attack + t_defense +
                                                  t_hp + t_sa + t_sd + t_cp + experience_growth))
 pokemon_model_subsets <- regsubsets(t_weight ~ t_bes + t_attack + t_defense +
@@ -282,9 +293,9 @@ pokemon_model_subsets <- regsubsets(t_weight ~ t_bes + t_attack + t_defense +
 summary(pokemon_model_subsets)
 ```
 
-#### Diagnostics
+### b) Diagnostics
 
-```{r p6b2}
+```{r p7b}
 p1 <- lm(weight_kg ~ t_hp)
 p2 <- lm(weight_kg ~ t_defense+t_hp)
 p3 <- lm(weight_kg ~ t_attack+t_defense+t_hp)
@@ -315,32 +326,32 @@ pokemon_gof <- sub_fit(pokemon_model_list, n = nrow(pokemon_subset))
 pokemon_gof
 ```
 
-#### Best Models
+### c) Best Models
 
-```{r p6b3}
+```{r p7c}
 data.frame(Criteria = colnames(pokemon_gof)[-1], Model = c(which.max(pokemon_gof$Radj2),
                                                    which.min(pokemon_gof$AIC),
                                                    which.min(pokemon_gof$AICc),
                                                    which.min(pokemon_gof$BIC)))
 ```
 
-### c) Stepwise Regression
+## 8. Selecting via Stepwise Regression
 
-#### Backwards AIC
+### a) Backwards AIC
 
-```{r p6c1}
+```{r p8a}
 backAIC <- step(p8, direction = "backward")
 ```
 
-#### Backwards BIC
+### b) Backwards BIC
 
-```{r p6c2}
+```{r p8b}
 backBIC <- step(p8, direction = "backward", k = log(nrow(pokemon_subset)))
 ```
 
-#### Forwards AIC
+### c) Forwards AIC
 
-```{r p6c3}
+```{r p8c}
 pokemon_base <- lm(t_weight ~ 1)
 forwardAIC <- step(pokemon_base,
                    scope = list(lower = ~ 1,
@@ -349,9 +360,9 @@ forwardAIC <- step(pokemon_base,
                    direction = "forward")
 ```
 
-#### Forwards BIC
+### d) Forwards BIC
 
-```{r p6c4}
+```{r p8d}
 pokemon_base <- lm(t_weight ~ 1)
 forwardAIC <- step(pokemon_base,
                    scope = list(lower = ~ 1,
@@ -361,16 +372,12 @@ forwardAIC <- step(pokemon_base,
                    k = log(nrow(pokemon_subset)))
 ```
 
-#### Best Models
+### e) Best Models
 
 - Backwards AIC: weight_kg ~ t_bes + t_defense + t_hp + t_sa + experience_growth
 - Backwards BIC: weight_kg ~ t_bes + t_defense + t_hp + experience_growth
 - Forwards AIC: t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + t_sd + t_sa + t_cp
 - Forwards BIC: t_weight ~ t_hp + t_defense + t_attack + t_bes
 
-### d) Conclusion
-
-We went with full model.
-
-## 7. Final Model
+## 8. Final Model Selection
 

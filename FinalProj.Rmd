@@ -25,7 +25,7 @@ pokemon <- read_csv("pokemon.csv", show_col_types = FALSE)
 
 ## 1. Original Dataset
 
-```{r p01}
+```{r p1}
 pokemon
 dim(pokemon) #dataset dimensions
 
@@ -41,7 +41,7 @@ pokemod
 
 ### a) Subsetting
 
-```{r p02a, cache = TRUE}
+```{r p2a, cache = TRUE}
 pokemon_subset <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp",
                               "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
 pokemon_subset
@@ -50,7 +50,7 @@ pairs(pokemon_subset)
 
 ### b) Original Model
 
-```{r p02b}
+```{r p2b}
 pokemon_full_model <- lm(weight_kg ~ capture_rate + base_egg_steps + attack + defense + hp +
                            sp_attack + sp_defense + capture_rate + experience_growth,
                          data = pokemon_subset)
@@ -60,7 +60,7 @@ summary(pokemon_full_model)
 ### c) NA values
 
 
-```{r  p02c}
+```{r  p2c}
 which(!complete.cases(pokemon_subset))
 pokemon_subset[which(!complete.cases(pokemon_subset)), ]
 ```
@@ -68,14 +68,14 @@ pokemon_subset[which(!complete.cases(pokemon_subset)), ]
 
 ### d) Original Model Diagnostics
 
-```{r p02d, cache = TRUE}
+```{r p2d, cache = TRUE}
 par(mfrow = c(2, 2))
 plot(pokemon_full_model)
 ```
 
 ### e) Original Model Formula
 
-```{r p02e}
+```{r p2e}
 cof <- summary(pokemon_full_model)$coefficients
 ```
 
@@ -96,7 +96,7 @@ $$\begin{aligned}
 
 ### a) Power Transform on X & Y
 
-```{r p03a}
+```{r p3a}
 pokemon_full_model_pt <- powerTransform(pokemon_subset)
 summary(pokemon_full_model_pt)
 
@@ -117,14 +117,14 @@ summary(t_pokemon_model)
 
 ### b) Full Box-Cox Diagnostics
 
-```{r p03b, cache = TRUE}
+```{r p3b, cache = TRUE}
 par(mfrow = c(2, 2))
 plot(t_pokemon_model)
 ```
 
 ### c) Box-Cox Model Formula
 
-```{r p03c}
+```{r p3c}
 pow <- summary(pokemon_full_model_pt)$result[, 2]
 cof <- summary(t_pokemon_model)$coefficients
 ```
@@ -147,7 +147,7 @@ $$\begin{aligned}
 
 ### a) Power Transform on X
 
-```{r p04a}
+```{r p4a}
 pokemon_subset2 <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp",
                                "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
 attach(pokemon_subset2)
@@ -168,7 +168,7 @@ test2 <- lm(weight_kg ~ t2_bes + t2_attack + t2_defense + t2_hp + t2_sa + t2_sd 
 
 ### b) Inverse Response on Y
 
-```{r p04b, cache = TRUE}
+```{r p4b, cache = TRUE}
 par(mfrow = c(1,1))
 inverseResponsePlot(test2)
 
@@ -180,14 +180,14 @@ t2_pokemon_model <- lm(t2_weight ~ t2_bes + t2_attack + t2_defense + t2_hp +
 
 ### c) Box-Cox on X and Inverse Response on Y Diagnostics
 
-```{r p04c, cache = TRUE}
+```{r p4c, cache = TRUE}
 par(mfrow = c(2, 2))
 plot(t2_pokemon_model)
 ```
 
 ### d) Box-Cox on X and Inverse Response on Y Formula
 
-```{r p04d}
+```{r p4d}
 pow <- summary(exp_model)$result[, 2]
 cof <- t2_pokemon_model$coefficients
 ```
@@ -210,12 +210,12 @@ $$\begin{aligned}
 
 ### a) Box-Cox
 
-```{r p05a1}
+```{r p5a1}
 vif(t_pokemon_model)
 summary(t_pokemon_model)
 ```
 
-```{r p05a2}
+```{r p5a2}
 n <- nrow(pokemon_subset)
 p <- 8
 
@@ -234,12 +234,12 @@ t_bad_leverage
 
 ### b) Inverse Response
 
-```{r p05b1}
+```{r p5b1}
 vif(t2_pokemon_model)
 summary(t2_pokemon_model)
 ```
 
-```{r p05b2}
+```{r p5b2}
 n <- nrow(pokemon_subset)
 p <- 8
 
@@ -264,7 +264,7 @@ We will choose the full Box-Cox model.
 
 ### a) VIF and Plots
 
-```{r p06a, cache = TRUE}
+```{r p6a, cache = TRUE}
 vif(t_pokemon_model)
 pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 ```
@@ -273,7 +273,7 @@ pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + expe
 
 #### Best Subset Models
 
-```{r p06b1}
+```{r p6b1}
 transformed_pokemon_subset <- data.frame(cbind(t_weight ~ t_bes + t_attack + t_defense +
                                                  t_hp + t_sa + t_sd + t_cp + experience_growth))
 pokemon_model_subsets <- regsubsets(t_weight ~ t_bes + t_attack + t_defense +
@@ -284,7 +284,7 @@ summary(pokemon_model_subsets)
 
 #### Diagnostics
 
-```{r p06b2}
+```{r p6b2}
 p1 <- lm(weight_kg ~ t_hp)
 p2 <- lm(weight_kg ~ t_defense+t_hp)
 p3 <- lm(weight_kg ~ t_attack+t_defense+t_hp)
@@ -317,7 +317,7 @@ pokemon_gof
 
 #### Best Models
 
-```{r p06b3}
+```{r p6b3}
 data.frame(Criteria = colnames(pokemon_gof)[-1], Model = c(which.max(pokemon_gof$Radj2),
                                                    which.min(pokemon_gof$AIC),
                                                    which.min(pokemon_gof$AICc),
@@ -328,19 +328,19 @@ data.frame(Criteria = colnames(pokemon_gof)[-1], Model = c(which.max(pokemon_gof
 
 #### Backwards AIC
 
-```{r}
+```{r p6c1}
 backAIC <- step(p8, direction = "backward")
 ```
 
 #### Backwards BIC
 
-```{r}
+```{r p6c2}
 backBIC <- step(p8, direction = "backward", k = log(nrow(pokemon_subset)))
 ```
 
 #### Forwards AIC
 
-```{r}
+```{r p6c3}
 pokemon_base <- lm(t_weight ~ 1)
 forwardAIC <- step(pokemon_base,
                    scope = list(lower = ~ 1,
@@ -351,7 +351,7 @@ forwardAIC <- step(pokemon_base,
 
 #### Forwards BIC
 
-```{r}
+```{r p6c4}
 pokemon_base <- lm(t_weight ~ 1)
 forwardAIC <- step(pokemon_base,
                    scope = list(lower = ~ 1,
@@ -372,5 +372,5 @@ forwardAIC <- step(pokemon_base,
 
 We went with full model.
 
-
+## 7. Final Model
 

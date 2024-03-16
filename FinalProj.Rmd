@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r source}
 library(tidyverse)
 library(car)
+library(leaps)
 pokemon <- read_csv("pokemon.csv", show_col_types = FALSE)
 ```
 
@@ -54,18 +55,29 @@ pokemon_full_model <- lm(weight_kg ~ capture_rate + base_egg_steps + attack + de
                            sp_attack + sp_defense + capture_rate + experience_growth,
                          data = pokemon_subset)
 summary(pokemon_full_model)
-cof <- summary(pokemon_full_model)$coefficients
+```
+
+### c) NA values
+
+
+```{r  p02c}
+which(!complete.cases(pokemon_subset))
+pokemon_subset[which(!complete.cases(pokemon_subset)), ]
 ```
 
 
-### c) Original Model Diagnostics
+### d) Original Model Diagnostics
 
-```{r p02c, cache = TRUE}
+```{r p02d, cache = TRUE}
 par(mfrow = c(2, 2))
 plot(pokemon_full_model)
 ```
 
-### d) Original Model Formula
+### e) Original Model Formula
+
+```{r p02e}
+cof <- summary(pokemon_full_model)$coefficients
+```
 
 $$\begin{aligned}
 \text{weight}
@@ -98,7 +110,8 @@ t_sa <- sp_attack^0.33
 t_sd <- sp_defense^0.15
 t_cp <- capture_rate^0.33
 
-t_pokemon_model <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
+t_pokemon_model <- lm(t_weight ~ t_bes + t_attack + t_defense + t_hp +
+                        t_sa + t_sd + t_cp + experience_growth)
 summary(t_pokemon_model)
 ```
 
@@ -161,7 +174,8 @@ inverseResponsePlot(test2)
 
 t2_weight <- weight_kg^0.35
 
-t2_pokemon_model <- lm(t2_weight ~ t2_bes + t2_attack + t2_defense + t2_hp + t2_sa + t2_sd + t2_cp + experience_growth)
+t2_pokemon_model <- lm(t2_weight ~ t2_bes + t2_attack + t2_defense + t2_hp +
+                         t2_sa + t2_sd + t2_cp + experience_growth)
 ```
 
 ### c) Box-Cox on X and Inverse Response on Y Diagnostics
@@ -202,14 +216,20 @@ summary(t_pokemon_model)
 ```
 
 ```{r p05a2}
-n <- nrow(t_pokemon_model)
+n <- nrow(pokemon_subset)
+p <- 8
+
+t_std_resid <- rstandard(t_pokemon_model)
 t_leverages <- hatvalues(t_pokemon_model)
 t_cooks <- cooks.distance(t_pokemon_model)
 
-t_leverage_point <- t_leverages[t_leverages > ((2 * 8) / n)]
-t_influential <- t_cooks[t_cooks>4 / (n - 2)]
-length(t_leverage_point)
-length(t_influential)
+t_outlier <- t_std_resid[abs(t_std_resid) > 2]
+t_leverage_point <- t_leverages[t_leverages > ((2 * (p + 1)) / n)]
+t_influential <- t_cooks[t_cooks > 4 / (n - 2)]
+
+t_outlier_by_leverage <- t_std_resid[t_leverages > ((2 * (p + 1)) / n)]
+t_bad_leverage <- t_outlier_by_leverage[abs(t_outlier_by_leverage) > 2]
+t_bad_leverage
 ```
 
 ### b) Inverse Response
@@ -220,22 +240,86 @@ summary(t2_pokemon_model)
 ```
 
 ```{r p05b2}
-n <- nrow(t2_pokemon_model)
+n <- nrow(pokemon_subset)
+p <- 8
+
+t2_std_resid <- rstandard(t2_pokemon_model)
 t2_leverages <- hatvalues(t2_pokemon_model)
 t2_cooks <- cooks.distance(t2_pokemon_model)
 
-t2_leverage_point <- t2_leverages[t2_leverages > ((2 * 8) / n)]
-t2_influential <- t2_cooks[t2_cooks>4 / (n - 2)]
-length(t2_leverage_point)
-length(t2_influential)
+t2_outlier <- t_std_resid[abs(t2_std_resid) > 2]
+t2_leverage_point <- t2_leverages[t2_leverages > ((2 * (p + 1)) / n)]
+t2_influential <- t2_cooks[t_cooks > 4 / (n - 2)]
+
+t2_outlier_by_leverage <- t2_std_resid[t2_leverages > ((2 * (p + 1)) / n)]
+t2_bad_leverage <- t2_outlier_by_leverage[abs(t2_outlier_by_leverage) > 2]
+t2_bad_leverage
 ```
 
+### c) Verdict
 
+We will choose the full Box-Cox model.
 
+## 6. Variable Selection
 
-```{r}
-which(!complete.cases(pokemon_subset))
+### a) VIF and Plots
+
+```{r p06a, cache = TRUE}
+vif(t_pokemon_model)
+pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 ```
-```{r}
-pokemon_subset[which(!complete.cases(pokemon_subset)), ]
+
+### b) All Possible Subsets
+
+#### Best Subset Models
+
+```{r p06b1}
+transformed_pokemon_subset <- data.frame(cbind(t_weight ~ t_bes + t_attack + t_defense +
+                                                 t_hp + t_sa + t_sd + t_cp + experience_growth))
+pokemon_model_subsets <- regsubsets(t_weight ~ t_bes + t_attack + t_defense +
+                                      t_hp + t_sa + t_sd + t_cp + experience_growth,
+                                    data = transformed_pokemon_subset)
+summary(pokemon_model_subsets)
+```
+
+#### Diagnostics
+
+```{r p06b2}
+p1 <- lm(weight_kg ~ t_hp)
+p2 <- lm(weight_kg ~ t_defense+t_hp)
+p3 <- lm(weight_kg ~ t_attack+t_defense+t_hp)
+p4 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp)
+p5 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+experience_growth)
+p6 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_cp+experience_growth)
+p7 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_sd+t_cp+experience_growth)
+p8 <- lm(weight_kg ~ t_bes+t_attack+t_defense+t_hp+t_sa+t_sd+t_cp+experience_growth)
+
+pokemon_model_list <- list(p1, p2, p3, p4, p5, p6, p7, p8)
+
+sub_fit <- function(x, n) {
+  size <- seq_along(x)
+  radj2 <- numeric(0)
+  aic <- numeric(0)
+  aic_cor <- numeric(0)
+  bic <- numeric(0)
+  for (i in seq_along(x)) {
+    radj2 <- c(radj2, summary(x[[i]])$adj.r.squared)
+    aic <- c(aic, extractAIC(x[[i]])[2])
+    aic_cor <- c(aic_cor, extractAIC(x[[i]])[2]+ (2 * (i + 2) * (i + 3)) / (n - i - 1))
+    bic <- c(bic, extractAIC(x[[i]], k = log(n))[2])
+  }
+  data.frame(Size = size, Radj2 = radj2, AIC = aic, AICc = aic_cor, BIC = bic)
+}
+
+pokemon_gof <- sub_fit(pokemon_model_list, n = nrow(pokemon_subset))
+pokemon_gof
+```
+
+#### Conclusion
+
+```{r p06b3}
+which.max(pokemon_gof$Radj2)
+which.min(pokemon_gof$AIC)
+which.min(pokemon_gof$AICc)
+which.min(pokemon_gof$BIC)
 ```

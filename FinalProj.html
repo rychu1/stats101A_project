@@ -2054,8 +2054,8 @@ t2_bad_leverage</code></pre>
 ##       799       800 
 ## -3.591117  3.589156</code></pre>
 </div>
-<div id="c-verdict" class="section level3">
-<h3>c) Verdict</h3>
+<div id="c-conclusion" class="section level3">
+<h3>c) Conclusion</h3>
 <p>We will choose the full Box-Cox model.</p>
 </div>
 </div>
@@ -2146,17 +2146,324 @@ pokemon_gof</code></pre>
 ## 7    7 0.2947021 7076.322 7076.548 7113.819
 ## 8    8 0.2963709 7075.458 7075.736 7117.642</code></pre>
 </div>
-<div id="conclusion" class="section level4">
-<h4>Conclusion</h4>
-<pre class="r"><code>which.max(pokemon_gof$Radj2)</code></pre>
-<pre><code>## [1] 8</code></pre>
-<pre class="r"><code>which.min(pokemon_gof$AIC)</code></pre>
-<pre><code>## [1] 5</code></pre>
-<pre class="r"><code>which.min(pokemon_gof$AICc)</code></pre>
-<pre><code>## [1] 5</code></pre>
-<pre class="r"><code>which.min(pokemon_gof$BIC)</code></pre>
-<pre><code>## [1] 4</code></pre>
+<div id="best-models" class="section level4">
+<h4>Best Models</h4>
+<pre class="r"><code>data.frame(Criteria = colnames(pokemon_gof)[-1], Model = c(which.max(pokemon_gof$Radj2),
+                                                   which.min(pokemon_gof$AIC),
+                                                   which.min(pokemon_gof$AICc),
+                                                   which.min(pokemon_gof$BIC)))</code></pre>
+<pre><code>##   Criteria Model
+## 1    Radj2     8
+## 2      AIC     5
+## 3     AICc     5
+## 4      BIC     4</code></pre>
 </div>
+</div>
+<div id="c-stepwise-regression" class="section level3">
+<h3>c) Stepwise Regression</h3>
+<div id="backwards-aic" class="section level4">
+<h4>Backwards AIC</h4>
+<pre class="r"><code>backAIC &lt;- step(p8, direction = &quot;backward&quot;)</code></pre>
+<pre><code>## Start:  AIC=7075.46
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + 
+##     t_cp + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_sd               1       137 6496399 7073.5
+## - t_cp               1     10097 6506359 7074.7
+## - t_attack           1     10229 6506491 7074.7
+## &lt;none&gt;                           6496262 7075.5
+## - t_sa               1     23831 6520093 7076.3
+## - experience_growth  1     51400 6547663 7079.6
+## - t_bes              1    220759 6717021 7099.6
+## - t_defense          1    274761 6771024 7105.9
+## - t_hp               1    362769 6859031 7116.0
+## 
+## Step:  AIC=7073.47
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_cp + 
+##     experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_cp               1     10098 6506498 7072.7
+## - t_attack           1     11582 6507981 7072.9
+## &lt;none&gt;                           6496399 7073.5
+## - t_sa               1     28922 6525321 7074.9
+## - experience_growth  1     52951 6549351 7077.8
+## - t_bes              1    220625 6717025 7097.6
+## - t_defense          1    338347 6834746 7111.2
+## - t_hp               1    375382 6871781 7115.4
+## 
+## Step:  AIC=7072.69
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_attack           1     14647 6521144 7072.4
+## &lt;none&gt;                           6506498 7072.7
+## - t_sa               1     21211 6527709 7073.2
+## - experience_growth  1     53835 6560333 7077.1
+## - t_bes              1    282315 6788813 7103.9
+## - t_defense          1    397356 6903854 7117.0
+## - t_hp               1    423331 6929829 7120.0
+## 
+## Step:  AIC=7072.45
+## weight_kg ~ t_bes + t_defense + t_hp + t_sa + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## &lt;none&gt;                           6521144 7072.4
+## - t_sa               1     16738 6537882 7072.5
+## - experience_growth  1     60140 6581284 7077.6
+## - t_bes              1    294025 6815169 7104.9
+## - t_hp               1    505405 7026549 7128.8
+## - t_defense          1    554492 7075637 7134.3</code></pre>
+</div>
+<div id="backwards-bic" class="section level4">
+<h4>Backwards BIC</h4>
+<pre class="r"><code>backBIC &lt;- step(p8, direction = &quot;backward&quot;, k = log(nrow(pokemon_subset)))</code></pre>
+<pre><code>## Start:  AIC=7117.64
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + 
+##     t_cp + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_sd               1       137 6496399 7111.0
+## - t_cp               1     10097 6506359 7112.2
+## - t_attack           1     10229 6506491 7112.2
+## - t_sa               1     23831 6520093 7113.8
+## - experience_growth  1     51400 6547663 7117.1
+## &lt;none&gt;                           6496262 7117.6
+## - t_bes              1    220759 6717021 7137.1
+## - t_defense          1    274761 6771024 7143.3
+## - t_hp               1    362769 6859031 7153.4
+## 
+## Step:  AIC=7110.97
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_cp + 
+##     experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_cp               1     10098 6506498 7105.5
+## - t_attack           1     11582 6507981 7105.7
+## - t_sa               1     28922 6525321 7107.8
+## - experience_growth  1     52951 6549351 7110.6
+## &lt;none&gt;                           6496399 7111.0
+## - t_bes              1    220625 6717025 7130.4
+## - t_defense          1    338347 6834746 7144.0
+## - t_hp               1    375382 6871781 7148.2
+## 
+## Step:  AIC=7105.5
+## weight_kg ~ t_bes + t_attack + t_defense + t_hp + t_sa + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_attack           1     14647 6521144 7100.6
+## - t_sa               1     21211 6527709 7101.4
+## - experience_growth  1     53835 6560333 7105.3
+## &lt;none&gt;                           6506498 7105.5
+## - t_bes              1    282315 6788813 7132.0
+## - t_defense          1    397356 6903854 7145.2
+## - t_hp               1    423331 6929829 7148.1
+## 
+## Step:  AIC=7100.57
+## weight_kg ~ t_bes + t_defense + t_hp + t_sa + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## - t_sa               1     16738 6537882 7095.9
+## &lt;none&gt;                           6521144 7100.6
+## - experience_growth  1     60140 6581284 7101.1
+## - t_bes              1    294025 6815169 7128.4
+## - t_hp               1    505405 7026549 7152.3
+## - t_defense          1    554492 7075637 7157.7
+## 
+## Step:  AIC=7095.89
+## weight_kg ~ t_bes + t_defense + t_hp + experience_growth
+## 
+##                     Df Sum of Sq     RSS    AIC
+## &lt;none&gt;                           6537882 7095.9
+## - experience_growth  1     58504 6596385 7096.2
+## - t_bes              1    277766 6815647 7121.7
+## - t_hp               1    499389 7037271 7146.8
+## - t_defense          1    537843 7075724 7151.0</code></pre>
+</div>
+<div id="forwards-aic" class="section level4">
+<h4>Forwards AIC</h4>
+<pre class="r"><code>pokemon_base &lt;- lm(t_weight ~ 1)
+forwardAIC &lt;- step(pokemon_base,
+                   scope = list(lower = ~ 1,
+                                upper = ~ t_bes + t_attack + t_defense +
+                                  t_hp + t_sa + t_sd + t_cp + experience_growth),
+                   direction = &quot;forward&quot;)</code></pre>
+<pre><code>## Start:  AIC=-1424.1
+## t_weight ~ 1
+## 
+##                     Df Sum of Sq     RSS     AIC
+## + t_hp               1    37.938  88.303 -1701.6
+## + t_attack           1    32.829  93.412 -1657.6
+## + t_defense          1    31.580  94.662 -1647.2
+## + t_cp               1    30.273  95.968 -1636.5
+## + t_sd               1    23.189 103.053 -1580.8
+## + t_bes              1    14.592 111.649 -1518.2
+## + t_sa               1    13.539 112.702 -1510.8
+## + experience_growth  1     7.984 118.257 -1473.2
+## &lt;none&gt;                           126.241 -1424.1
+## 
+## Step:  AIC=-1701.6
+## t_weight ~ t_hp
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_defense          1   15.3635 72.940 -1849.1
+## + t_attack           1   10.5074 77.796 -1798.7
+## + t_cp               1    7.7939 80.509 -1771.9
+## + t_sd               1    5.6529 82.650 -1751.3
+## + t_bes              1    4.0980 84.205 -1736.8
+## + experience_growth  1    2.1236 86.180 -1718.6
+## + t_sa               1    1.2940 87.009 -1711.2
+## &lt;none&gt;                           88.303 -1701.6
+## 
+## Step:  AIC=-1849.08
+## t_weight ~ t_hp + t_defense
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_attack           1   2.73257 70.207 -1876.9
+## + t_cp               1   1.71245 71.227 -1865.7
+## + t_bes              1   1.63634 71.303 -1864.8
+## + experience_growth  1   1.34547 71.594 -1861.6
+## + t_sd               1   0.25548 72.684 -1849.8
+## &lt;none&gt;                           72.940 -1849.1
+## + t_sa               1   0.12429 72.815 -1848.4
+## 
+## Step:  AIC=-1876.94
+## t_weight ~ t_hp + t_defense + t_attack
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_bes              1   1.11653 69.091 -1887.5
+## + t_cp               1   0.97210 69.235 -1885.8
+## + experience_growth  1   0.88692 69.320 -1884.9
+## + t_sd               1   0.53301 69.674 -1880.9
+## &lt;none&gt;                           70.207 -1876.9
+## + t_sa               1   0.00453 70.203 -1875.0
+## 
+## Step:  AIC=-1887.47
+## t_weight ~ t_hp + t_defense + t_attack + t_bes
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + experience_growth  1   0.45888 68.632 -1890.7
+## + t_cp               1   0.39669 68.694 -1890.0
+## + t_sd               1   0.32795 68.763 -1889.2
+## &lt;none&gt;                           69.091 -1887.5
+## + t_sa               1   0.02015 69.070 -1885.7
+## 
+## Step:  AIC=-1890.68
+## t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth
+## 
+##        Df Sum of Sq    RSS     AIC
+## + t_sd  1   0.41818 68.214 -1893.5
+## + t_cp  1   0.37881 68.253 -1893.0
+## &lt;none&gt;              68.632 -1890.7
+## + t_sa  1   0.02248 68.609 -1888.9
+## 
+## Step:  AIC=-1893.46
+## t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + 
+##     t_sd
+## 
+##        Df Sum of Sq    RSS     AIC
+## + t_sa  1   0.22372 67.990 -1894.0
+## + t_cp  1   0.17958 68.034 -1893.5
+## &lt;none&gt;              68.214 -1893.5
+## 
+## Step:  AIC=-1894.03
+## t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + 
+##     t_sd + t_sa
+## 
+##        Df Sum of Sq    RSS     AIC
+## + t_cp  1   0.28357 67.706 -1895.3
+## &lt;none&gt;              67.990 -1894.0
+## 
+## Step:  AIC=-1895.3
+## t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + 
+##     t_sd + t_sa + t_cp</code></pre>
+</div>
+<div id="forwards-bic" class="section level4">
+<h4>Forwards BIC</h4>
+<pre class="r"><code>pokemon_base &lt;- lm(t_weight ~ 1)
+forwardAIC &lt;- step(pokemon_base,
+                   scope = list(lower = ~ 1,
+                                upper = ~ t_bes + t_attack + t_defense +
+                                  t_hp + t_sa + t_sd + t_cp + experience_growth),
+                   direction = &quot;forward&quot;,
+                   k = log(nrow(pokemon_subset)))</code></pre>
+<pre><code>## Start:  AIC=-1419.42
+## t_weight ~ 1
+## 
+##                     Df Sum of Sq     RSS     AIC
+## + t_hp               1    37.938  88.303 -1692.2
+## + t_attack           1    32.829  93.412 -1648.2
+## + t_defense          1    31.580  94.662 -1637.8
+## + t_cp               1    30.273  95.968 -1627.1
+## + t_sd               1    23.189 103.053 -1571.4
+## + t_bes              1    14.592 111.649 -1508.8
+## + t_sa               1    13.539 112.702 -1501.4
+## + experience_growth  1     7.984 118.257 -1463.8
+## &lt;none&gt;                           126.241 -1419.4
+## 
+## Step:  AIC=-1692.23
+## t_weight ~ t_hp
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_defense          1   15.3635 72.940 -1835.0
+## + t_attack           1   10.5074 77.796 -1784.6
+## + t_cp               1    7.7939 80.509 -1757.8
+## + t_sd               1    5.6529 82.650 -1737.3
+## + t_bes              1    4.0980 84.205 -1722.7
+## + experience_growth  1    2.1236 86.180 -1704.6
+## + t_sa               1    1.2940 87.009 -1697.1
+## &lt;none&gt;                           88.303 -1692.2
+## 
+## Step:  AIC=-1835.02
+## t_weight ~ t_hp + t_defense
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_attack           1   2.73257 70.207 -1858.2
+## + t_cp               1   1.71245 71.227 -1846.9
+## + t_bes              1   1.63634 71.303 -1846.1
+## + experience_growth  1   1.34547 71.594 -1842.9
+## &lt;none&gt;                           72.940 -1835.0
+## + t_sd               1   0.25548 72.684 -1831.1
+## + t_sa               1   0.12429 72.815 -1829.7
+## 
+## Step:  AIC=-1858.19
+## t_weight ~ t_hp + t_defense + t_attack
+## 
+##                     Df Sum of Sq    RSS     AIC
+## + t_bes              1   1.11653 69.091 -1864.0
+## + t_cp               1   0.97210 69.235 -1862.4
+## + experience_growth  1   0.88692 69.320 -1861.4
+## &lt;none&gt;                           70.207 -1858.2
+## + t_sd               1   0.53301 69.674 -1857.5
+## + t_sa               1   0.00453 70.203 -1851.5
+## 
+## Step:  AIC=-1864.04
+## t_weight ~ t_hp + t_defense + t_attack + t_bes
+## 
+##                     Df Sum of Sq    RSS     AIC
+## &lt;none&gt;                           69.091 -1864.0
+## + experience_growth  1   0.45888 68.632 -1862.6
+## + t_cp               1   0.39669 68.694 -1861.8
+## + t_sd               1   0.32795 68.763 -1861.1
+## + t_sa               1   0.02015 69.070 -1857.6</code></pre>
+</div>
+<div id="best-models-1" class="section level4">
+<h4>Best Models</h4>
+<ul>
+<li>Backwards AIC: weight_kg ~ t_bes + t_defense + t_hp + t_sa +
+experience_growth</li>
+<li>Backwards BIC: weight_kg ~ t_bes + t_defense + t_hp +
+experience_growth</li>
+<li>Forwards AIC: t_weight ~ t_hp + t_defense + t_attack + t_bes +
+experience_growth + t_sd + t_sa + t_cp</li>
+<li>Forwards BIC: t_weight ~ t_hp + t_defense + t_attack + t_bes</li>
+</ul>
+</div>
+</div>
+<div id="d-conclusion" class="section level3">
+<h3>d) Conclusion</h3>
+<p>We went with full model.</p>
 </div>
 </div>
 

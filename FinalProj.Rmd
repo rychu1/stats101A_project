@@ -256,7 +256,7 @@ t2_bad_leverage <- t2_outlier_by_leverage[abs(t2_outlier_by_leverage) > 2]
 t2_bad_leverage
 ```
 
-### c) Verdict
+### c) Conclusion
 
 We will choose the full Box-Cox model.
 
@@ -315,11 +315,62 @@ pokemon_gof <- sub_fit(pokemon_model_list, n = nrow(pokemon_subset))
 pokemon_gof
 ```
 
-#### Conclusion
+#### Best Models
 
 ```{r p06b3}
-which.max(pokemon_gof$Radj2)
-which.min(pokemon_gof$AIC)
-which.min(pokemon_gof$AICc)
-which.min(pokemon_gof$BIC)
+data.frame(Criteria = colnames(pokemon_gof)[-1], Model = c(which.max(pokemon_gof$Radj2),
+                                                   which.min(pokemon_gof$AIC),
+                                                   which.min(pokemon_gof$AICc),
+                                                   which.min(pokemon_gof$BIC)))
 ```
+
+### c) Stepwise Regression
+
+#### Backwards AIC
+
+```{r}
+backAIC <- step(p8, direction = "backward")
+```
+
+#### Backwards BIC
+
+```{r}
+backBIC <- step(p8, direction = "backward", k = log(nrow(pokemon_subset)))
+```
+
+#### Forwards AIC
+
+```{r}
+pokemon_base <- lm(t_weight ~ 1)
+forwardAIC <- step(pokemon_base,
+                   scope = list(lower = ~ 1,
+                                upper = ~ t_bes + t_attack + t_defense +
+                                  t_hp + t_sa + t_sd + t_cp + experience_growth),
+                   direction = "forward")
+```
+
+#### Forwards BIC
+
+```{r}
+pokemon_base <- lm(t_weight ~ 1)
+forwardAIC <- step(pokemon_base,
+                   scope = list(lower = ~ 1,
+                                upper = ~ t_bes + t_attack + t_defense +
+                                  t_hp + t_sa + t_sd + t_cp + experience_growth),
+                   direction = "forward",
+                   k = log(nrow(pokemon_subset)))
+```
+
+#### Best Models
+
+- Backwards AIC: weight_kg ~ t_bes + t_defense + t_hp + t_sa + experience_growth
+- Backwards BIC: weight_kg ~ t_bes + t_defense + t_hp + experience_growth
+- Forwards AIC: t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + t_sd + t_sa + t_cp
+- Forwards BIC: t_weight ~ t_hp + t_defense + t_attack + t_bes
+
+### d) Conclusion
+
+We went with full model.
+
+
+

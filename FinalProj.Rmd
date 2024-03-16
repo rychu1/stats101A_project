@@ -45,7 +45,6 @@ pokemod
 pokemon_subset <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp",
                               "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
 pokemon_subset
-pairs(pokemon_subset)
 ```
 
 ### b) Original Model
@@ -60,25 +59,43 @@ summary(pokemon_full_model)
 ### c) NA values
 
 
-```{r  p2c}
+```{r p2c}
 which(!complete.cases(pokemon_subset))
 pokemon_subset[which(!complete.cases(pokemon_subset)), ]
 ```
 
-
-### d) Original Model Diagnostics
+### d) Correlation Matrix and Pairs
 
 ```{r p2d, cache = TRUE}
+cor(pokemon_subset[-which(!complete.cases(pokemon_subset)), ])
+pairs(pokemon_subset)
+```
+
+### e) Ditribution Within Variables
+
+```{r p2e}
+par(mfrow = c(2, 3))
+pokemon_subset_narm <- pokemon_subset[-which(!complete.cases(pokemon_subset)), ]
+for (i in colnames(pokemon_subset)) {
+  plot(density(pokemon_subset_narm[[i]]), main = i)
+}
+```
+
+
+### f) Original Model Diagnostics
+
+```{r p2f, cache = TRUE}
 par(mfrow = c(2, 2))
 plot(pokemon_full_model)
 ```
 
-### e) Original Model Formula
+### g) Original Model Formula
 
-```{r p2e}
+```{r p2g}
 cof <- summary(pokemon_full_model)$coefficients
 ```
 
+**Original Model:**  
 $$\begin{aligned}
 \text{weight}
 &= `r cof[1]`
@@ -129,8 +146,7 @@ pow <- summary(pokemon_full_model_pt)$result[, 2]
 cof <- summary(t_pokemon_model)$coefficients
 ```
 
-Box-cox model:
-
+**Box-cox model:**  
 $$\begin{aligned}
 \text{weight}^{`r pow[1]`}
 &= `r cof[1]`
@@ -193,8 +209,7 @@ pow <- summary(exp_model)$result[, 2]
 cof <- t2_pokemon_model$coefficients
 ```
 
-Inverse response plot model:
-
+**Inverse response plot model:**  
 $$\begin{aligned}
 \text{weight}^{0.35}
 &= `r cof[1]`
@@ -268,8 +283,15 @@ We will choose the full Box-Cox model.
 
 ```{r p6a, cache = TRUE}
 vif(t_pokemon_model)
+
 pairs(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
 ```
+
+```{r}
+# cor(t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth)
+cor(cbind(t_weight, t_bes, t_attack, t_defense, t_hp, t_sa, t_sd, t_cp, experience_growth))
+```
+
 
 ### b) Added Variable Plots
 
@@ -376,24 +398,29 @@ forwardAIC <- step(pokemon_base,
 
 ### e) Best Models
 
-- Backwards AIC: weight_kg ~ t_bes + t_defense + t_hp + t_sa + experience_growth
-- Backwards BIC: weight_kg ~ t_bes + t_defense + t_hp + experience_growth
+- Backwards AIC: t_weight ~ t_bes + t_attack + t_defense + t_hp + t_sa + t_sd + t_cp + experience_growth
+- Backwards BIC: t_weight ~ t_bes + t_attack + t_defense + t_hp
 - Forwards AIC: t_weight ~ t_hp + t_defense + t_attack + t_bes + experience_growth + t_sd + t_sa + t_cp
 - Forwards BIC: t_weight ~ t_hp + t_defense + t_attack + t_bes
 
 ## 9. Final Model Selection
 
+Candidate models:
+
+- p4 (reduced model)
+- t_pokemon_model (full model)
+
 ### a) Summary Comparison
 
 ```{r p9a}
 summary(t_pokemon_model)
-summary(p5)
+summary(p4)
 ```
 
 ### b) ANOVA test
 
 ```{r p9b}
-anova(p5, t_pokemon_model)
+anova(p4, t_pokemon_model)
 ```
 
 ### c) Diagnostics Comparison
@@ -401,15 +428,40 @@ anova(p5, t_pokemon_model)
 ```{r p9c}
 par(mfrow = c(2, 2))
 plot(t_pokemon_model)
-plot(p5)
+plot(p4)
 ```
 
 ### d) Conclusion
 
-The full model is still preferred as it still has the best diagnostic plots overall
+- Since the ANOVA p-value < 0.05, we reject $H_0$, and there is sufficient evidence against the reduced model in favor of the full
+model.
+- The full model is also preferred as the reduced model does not have significantly better diagnostic plots.
 
 ## 10. Final Model
 
 ### a) Summary Statistics
 
+```{r p10a}
+summary(t_pokemon_model)
+```
 
+### b) Formula
+
+```{r p10b}
+pow <- summary(pokemon_full_model_pt)$result[, 2]
+cof <- summary(t_pokemon_model)$coefficients
+```
+
+**Final Model via Box-Cox:**  
+$$\begin{aligned}
+\text{weight}^{`r pow[1]`}
+&= `r cof[1]`
+`r cof[2]` * \text{base egg steps}^{`r pow[2]`}
++ `r cof[3]` * \text{attack}^{`r pow[3]`}
++ `r cof[4]` * \text{defense}^{`r pow[4]`} \\
+&+ `r cof[5]` * \text{hp}^{`r pow[5]`}
+`r cof[6]` * \text{sp_attack}^{`r pow[6]`}
++ `r cof[7]` * \text{sp_defense}^{`r pow[7]`} \\
+&`r cof[8]` * \text{capture_rate}^{`r pow[8]`}
++ `r cof[9]` * \text{experience_growth}
+\end{aligned}$$

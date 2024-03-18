@@ -45,6 +45,7 @@ pokemod
 pokemon_subset <- pokemod[, c("weight_kg", "base_egg_steps", "attack", "defense", "hp",
                               "sp_attack", "sp_defense", "capture_rate", "experience_growth")]
 pokemon_subset
+summary(pokemon_subset)
 ```
 
 ### b) Original Model

@@ -1704,6 +1704,13 @@ pokemon_subset</code></pre>
 ##  3rd Qu.:1059860  
 ##  Max.   :1640000  
 ## </code></pre>
+<pre class="r"><code>apply(pokemon_subset[-which(!complete.cases(pokemon_subset)), ], 2, sd)</code></pre>
+<pre><code>##         weight_kg    base_egg_steps            attack           defense 
+##         109.28741        6570.22627          32.21298          30.78979 
+##                hp         sp_attack        sp_defense      capture_rate 
+##          26.60664          32.17934          27.99371          76.03634 
+## experience_growth 
+##      161712.37247</code></pre>
 </div>
 <div id="b-original-model" class="section level3">
 <h3>b) Original Model</h3>
